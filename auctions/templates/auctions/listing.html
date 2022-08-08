@@ -1,0 +1,27 @@
+{% extends 'auctions/layout.html' %}
+
+{% block title %}{{listing.title}}{% endblock %}
+
+{% block body %}
+<h1>{{listing.title}}</h1>
+{% if user.is_authenticated %}
+<form action="{% url 'watchlist' %}" method="post">
+    <input type="submit" value="Watchlist">
+</form>
+{% endif %}
+<img src="{{listing.image}}">
+<p>{{listing.description}}</p>
+<p>${{listing.start_bid}}</p>
+<div>
+    <p>Listed by: {{listing.creator}}</p>
+    <p>Category:
+        {% if listing.category is null %}
+        No category listed
+        {% else %}
+        {{listing.category}}
+        {% endif %}
+    </p>
+
+</div>
+
+{% endblock %}
