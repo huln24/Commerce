@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
-from .models import User, AuctionListing, Bid, Category, Comment
+from .models import User, AuctionListing, Bid, Category, Comment, Watchlist
 
 
 def index(request):
@@ -73,7 +73,7 @@ def register(request):
 # Display current user's watchlist
 @login_required
 def watchlist(request):
-    pass
+    return render(request, "auctions/watchlist.html")
 
 
 # Place for creating new lisitng (only for logged in user)
@@ -142,5 +142,10 @@ def category(request, category):
 
 def listing(request, id, title):
     return render(
-        request, "auctions/listing.html", {"listing": AuctionListing.objects.get(id=id)}
+        request,
+        "auctions/listing.html",
+        {
+            "listing": AuctionListing.objects.get(id=id),
+            "comments": Comment.objects.filter(listing=id),
+        },
     )

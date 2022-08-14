@@ -32,7 +32,7 @@ class AuctionListing(models.Model):
 
 class Bid(models.Model):
     amount = models.DecimalField(max_digits=1000, decimal_places=2)
-    bidder = models.ForeignKey(User, on_delete=models.CASCADE)
+    bidder = models.ManyToManyField(User, related_name="bids")
     bidded_on = models.DateTimeField(auto_now_add=True)
     listing = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
 
@@ -40,7 +40,12 @@ class Bid(models.Model):
 class Comment(models.Model):
     content = models.TextField()
     # CASCADE - When user is deleted comment will be deleted too
-    commenter = models.ForeignKey(User, on_delete=models.CASCADE)
+    commenter = models.ManyToManyField(User, related_name="comments")
     # Sets field to now when object is created = True -> cannot modify
     created_on = models.DateTimeField(auto_now_add=True)
-    lisitng = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
+    listing = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
+
+
+class Watchlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    listing = models.ManyToManyField(AuctionListing)

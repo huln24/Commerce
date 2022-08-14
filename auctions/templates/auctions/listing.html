@@ -9,9 +9,15 @@
     <input type="submit" value="Watchlist">
 </form>
 {% endif %}
-<img src="{{listing.image}}">
-<p>{{listing.description}}</p>
-<p>${{listing.start_bid}}</p>
+<div>
+    <img src="{{listing.image}}">
+</div>
+
+<div>
+    <p>{{listing.description}}</p>
+    <p>${{listing.start_bid}}</p>
+</div>
+
 <div>
     <p>Listed by: {{listing.creator}}</p>
     <p>Category:
@@ -21,7 +27,12 @@
         {{listing.category}}
         {% endif %}
     </p>
+</div>
 
+<div>
+    {% for comment in comments %}
+
+    {% endfor %}
 </div>
 
 {% endblock %}
