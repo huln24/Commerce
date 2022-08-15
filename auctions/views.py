@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import Max
 
 from .models import User, AuctionListing, Bid, Category, Comment, Watchlist
 
@@ -162,14 +162,27 @@ def category(request, category):
 
 def listing(request, id, title):
     if request.method == "POST":
-        commenter = request.user
-        content = request.POST.get("content")
         listing = AuctionListing.objects.get(id=id)
-        comment = Comment.objects.create(
-            content=content, commenter=commenter, listing=listing
-        )
-        comment.save()
-        return HttpResponseRedirect(request.path_info)
+        if "close" in request.POST:
+            listing.active = False
+            listing.save()
+            # bids = Bid.objects.filter(listing=listing)
+            # highest = bids.aggregate(Max("amount"))
+            # if highest is None:
+            #   listing.winner = None
+            # else:
+            #    listing.winner = getattr(
+            #        Bid.objects.get(listing=listing, amount=highest), "bidder"
+            #    )
+        else:
+            commenter = request.user
+            content = request.POST.get("content")
+
+            comment = Comment.objects.create(
+                content=content, commenter=commenter, listing=listing
+            )
+            comment.save()
+            return HttpResponseRedirect(request.path_info)
     return render(
         request,
         "auctions/listing.html",
@@ -179,5 +192,6 @@ def listing(request, id, title):
             "in_watchlist": Watchlist.objects.filter(
                 listing=id, user=request.user
             ).count(),
+            "winner": getattr(AuctionListing.objects.get(id=id), "winner"),
         },
     )

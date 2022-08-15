@@ -4,7 +4,17 @@
 
 {% block body %}
 <h1>{{listing.title}}</h1>
+{% if not listing.active %}
+<h2>Listing is closed</h2>
+<h3>Winner is: {{winner}}</h3>
+{% else %}
 {% if user.is_authenticated %}
+{% if user == listing.creator %}
+<form action="{% url 'listing' listing.id listing.title %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Close auction" name="close">
+</form>
+{% endif %}
 <form action="{% url 'watchlist' %}" method="post">
     {% csrf_token %}
     <input name="listing_id" value="{{listing.id}}" type="hidden">
@@ -14,6 +24,7 @@
     <input type="submit" value="Watchlist" name="add">
     {% endif %}
 </form>
+{% endif %}
 {% endif %}
 <div>
     <img src="{{listing.image}}">
