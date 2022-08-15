@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
+
 from .models import User, AuctionListing, Bid, Category, Comment, Watchlist
 
 
@@ -73,7 +74,26 @@ def register(request):
 # Display current user's watchlist
 @login_required
 def watchlist(request):
-    return render(request, "auctions/watchlist.html")
+
+    if request.method == "POST":
+        id = request.POST.get("listing_id")
+        listing = AuctionListing.objects.get(id=id)
+        if "remove" in request.POST:
+            Watchlist.objects.filter(user=request.user, listing=listing).delete()
+            return HttpResponseRedirect(reverse("listing", args=[id, listing.title]))
+        else:
+            add_watchlist = Watchlist.objects.create(user=request.user, listing=listing)
+            add_watchlist.save()
+
+    users_watchlist: Watchlist = Watchlist.objects.filter(user=request.user)
+    listings = list()
+    for listing in users_watchlist:
+        listings.append(getattr(listing, "listing"))
+    return render(
+        request,
+        "auctions/watchlist.html",
+        {"listings": listings},
+    )
 
 
 # Place for creating new lisitng (only for logged in user)
@@ -141,11 +161,23 @@ def category(request, category):
 
 
 def listing(request, id, title):
+    if request.method == "POST":
+        commenter = request.user
+        content = request.POST.get("content")
+        listing = AuctionListing.objects.get(id=id)
+        comment = Comment.objects.create(
+            content=content, commenter=commenter, listing=listing
+        )
+        comment.save()
+        return HttpResponseRedirect(request.path_info)
     return render(
         request,
         "auctions/listing.html",
         {
             "listing": AuctionListing.objects.get(id=id),
             "comments": Comment.objects.filter(listing=id),
+            "in_watchlist": Watchlist.objects.filter(
+                listing=id, user=request.user
+            ).count(),
         },
     )

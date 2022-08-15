@@ -6,7 +6,13 @@
 <h1>{{listing.title}}</h1>
 {% if user.is_authenticated %}
 <form action="{% url 'watchlist' %}" method="post">
-    <input type="submit" value="Watchlist">
+    {% csrf_token %}
+    <input name="listing_id" value="{{listing.id}}" type="hidden">
+    {% if in_watchlist > 0 %}
+    <input type="submit" value="Remove from Watchlist" name="remove">
+    {% else %}
+    <input type="submit" value="Watchlist" name="add">
+    {% endif %}
 </form>
 {% endif %}
 <div>
@@ -14,11 +20,12 @@
 </div>
 
 <div>
+    <h4>Description</h4>
     <p>{{listing.description}}</p>
-    <p>${{listing.start_bid}}</p>
+    <p>Starting bid: ${{listing.start_bid}}</p>
 </div>
 
-<div>
+<div id="info">
     <p>Listed by: {{listing.creator}}</p>
     <p>Category:
         {% if listing.category is null %}
@@ -29,9 +36,22 @@
     </p>
 </div>
 
-<div>
+<div id="comment">
+    <h3>Comments</h3>
+    {% if user.is_authenticated %}
+    <h4>Leave a comment</h4>
+    <form method="post" action="{% url 'listing' listing.id listing.title %}">
+        {% csrf_token %}
+        <textarea placeholder="Your comment here..." name="content"></textarea>
+        <input type="submit" value="Submit">
+    </form>
+    {% endif %}
     {% for comment in comments %}
-
+    <div>
+        <h5>{{comment.commenter}}</h5>
+        {{comment.created_on}}
+        <p>{{comment.content}}</p>
+    </div>
     {% endfor %}
 </div>
 
