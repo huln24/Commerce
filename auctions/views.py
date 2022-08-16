@@ -211,8 +211,10 @@ def listing(request, id, title):
         if "close" in request.POST:
             listing.active = False
             listing.save()
-            winner = Bid.objects.filter(listing=listing).order_by("amount").last()
+            bids = Bid.objects.filter(listing=listing)
+            winner = bids.order_by("amount").last()
             listing.winner = winner.bidder
+            listing.save()
         else:
             commenter = request.user
             content = request.POST.get("content")
@@ -233,7 +235,7 @@ def listing(request, id, title):
             "in_watchlist": Watchlist.objects.filter(
                 listing=id, user=request.user
             ).count(),
-            "winner": AuctionListing.objects.get(id=id).winner,
+            "winner": listing.winner,
             "current_bid": current_bid.amount,
         },
     )

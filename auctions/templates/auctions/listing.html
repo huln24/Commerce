@@ -6,6 +6,7 @@
 <h1>{{listing.title}}</h1>
 {% if not listing.active %}
 <h2>Listing is closed</h2>
+<p>Winner is {{winner}}</p>
 {% else %}
 {% if user.is_authenticated %}
 {% if user == listing.creator %}
@@ -37,7 +38,7 @@
     <p>Current bid: ${{current_bid}}</p>
     {% else %}
     {% endif %}
-    {% if not winner %}
+    {% if not winner or listing.active %}
     {% if message %}
     <div class="error_msg">{{message}}</div>
     {% endif %}
