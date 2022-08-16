@@ -1,4 +1,3 @@
-from unicodedata import category
 from django.urls import path
 
 from . import views
@@ -14,4 +13,5 @@ urlpatterns = [
     path("listing/<str:id>/<str:title>", views.listing, name="listing"),
     path("categories", views.categories, name="categories"),
     path("category/<str:category>", views.category, name="category"),
+    path("listing/<str:id>/<str:title>/bid_error", views.bid_error, name="bid_error"),
 ]

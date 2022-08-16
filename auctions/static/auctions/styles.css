@@ -58,3 +58,8 @@ img {
     max-height: 100%;
     object-fit: contain;
 }
+
+.error_msg {
+    color: red;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}

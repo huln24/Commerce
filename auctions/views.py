@@ -124,6 +124,51 @@ def create_listing(request):
         )
 
 
+@login_required
+def bid_error(request, id, title):
+    if request.method == "POST":
+        amount = float(request.POST.get("amount"))
+        listing = AuctionListing.objects.get(id=id)
+        bids = Bid.objects.filter(listing=listing)
+        current_bid = bids.order_by("bidded_on").last()
+        if amount < listing.start_bid:
+            return render(
+                request,
+                "auctions/listing.html",
+                {
+                    "listing": listing,
+                    "comments": Comment.objects.filter(listing=id),
+                    "in_watchlist": Watchlist.objects.filter(
+                        listing=id, user=request.user
+                    ).count(),
+                    "winner": AuctionListing.objects.get(id=id).winner,
+                    "current_bid": current_bid.amount,
+                    "message": "Error! Bid must be greater than starting bid!",
+                },
+            )
+        elif current_bid is not None and amount <= current_bid.amount:
+            return render(
+                request,
+                "auctions/listing.html",
+                {
+                    "listing": listing,
+                    "comments": Comment.objects.filter(listing=id),
+                    "in_watchlist": Watchlist.objects.filter(
+                        listing=id, user=request.user
+                    ).count(),
+                    "winner": AuctionListing.objects.get(id=id).winner,
+                    "current_bid": current_bid.amount,
+                    "message": "Error! Bid must be higher than current bid!",
+                },
+            )
+        else:
+            bid = Bid.objects.create(
+                amount=amount, bidder=request.user, listing=listing
+            )
+            bid.save()
+            return HttpResponseRedirect(reverse("listing", args=[id, listing.title]))
+
+
 # List all categories, clicking on category name
 # redirects user to list of active listings in that category
 def categories(request):
@@ -161,19 +206,13 @@ def category(request, category):
 
 
 def listing(request, id, title):
+    listing = AuctionListing.objects.get(id=id)
     if request.method == "POST":
-        listing = AuctionListing.objects.get(id=id)
         if "close" in request.POST:
             listing.active = False
             listing.save()
-            # bids = Bid.objects.filter(listing=listing)
-            # highest = bids.aggregate(Max("amount"))
-            # if highest is None:
-            #   listing.winner = None
-            # else:
-            #    listing.winner = getattr(
-            #        Bid.objects.get(listing=listing, amount=highest), "bidder"
-            #    )
+            winner = Bid.objects.filter(listing=listing).order_by("amount").last()
+            listing.winner = winner.bidder
         else:
             commenter = request.user
             content = request.POST.get("content")
@@ -183,6 +222,8 @@ def listing(request, id, title):
             )
             comment.save()
             return HttpResponseRedirect(request.path_info)
+    bids = Bid.objects.filter(listing=listing)
+    current_bid = bids.order_by("bidded_on").last()
     return render(
         request,
         "auctions/listing.html",
@@ -192,6 +233,7 @@ def listing(request, id, title):
             "in_watchlist": Watchlist.objects.filter(
                 listing=id, user=request.user
             ).count(),
-            "winner": getattr(AuctionListing.objects.get(id=id), "winner"),
+            "winner": AuctionListing.objects.get(id=id).winner,
+            "current_bid": current_bid.amount,
         },
     )

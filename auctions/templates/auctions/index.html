@@ -4,6 +4,7 @@
 <h2>Active Listings</h2>
 
 {% for listing in listings %}
+{% if listing.active %}
 <div id="listing_block">
     <a href="{% url 'listing' listing.id listing.title %}" style="text-decoration: none;">
         <div class="column" id="image_box_list">
@@ -22,5 +23,6 @@
         </div>
     </a>
 </div>
+{% endif %}
 {% endfor %}
 {% endblock %}

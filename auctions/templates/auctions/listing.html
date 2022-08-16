@@ -6,7 +6,6 @@
 <h1>{{listing.title}}</h1>
 {% if not listing.active %}
 <h2>Listing is closed</h2>
-<h3>Winner is: {{winner}}</h3>
 {% else %}
 {% if user.is_authenticated %}
 {% if user == listing.creator %}
@@ -34,6 +33,21 @@
     <h4>Description</h4>
     <p>{{listing.description}}</p>
     <p>Starting bid: ${{listing.start_bid}}</p>
+    {% if current_bid is not None %}
+    <p>Current bid: ${{current_bid}}</p>
+    {% else %}
+    {% endif %}
+    {% if not winner %}
+    {% if message %}
+    <div class="error_msg">{{message}}</div>
+    {% endif %}
+    <form action="{% url 'bid_error' listing.id listing.title %}" method="post">
+        {% csrf_token %}
+        <label for="amount">Your bid: </label>
+        <input type="text" id="amount" name="amount">
+        <input type="submit" value="Place bid" name="bid">
+    </form>
+    {% endif %}
 </div>
 
 <div id="info">
